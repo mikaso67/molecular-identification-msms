@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color">
+  <title>From spectra to structure | Enveda CASMI 2026</title>
+  <meta name="description" content="I identify molecular structures from MS/MS spectra. A project on retrieval, ranking, and the limits of validation in Enveda CASMI 2026.">
+  <script>
+    try {
+      const theme = localStorage.getItem("msms-theme");
+      if (theme === "light" || theme === "dark") {
+        document.documentElement.dataset.theme = theme;
+      }
+    } catch {}
+  </script>
+  <script src="theme.js" defer></script>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .hero-facts { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    @media (max-width: 1050px) {
+      .hero-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 24px; }
+      .hero-facts > div:nth-child(3) { border-left: 0; padding-left: 0; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="#top">msms<span>/</span>structure</a>
+      <nav aria-label="Main navigation">
+        <a href="#problem">Problem</a>
+        <a href="#approach">My approach</a>
+        <a href="#results">Results</a>
+        <a href="#learning">What I learned</a>
+        <a href="#status">Status</a>
+        <a href="#credits">Credits</a>
+      </nav>
+      <button class="theme-toggle" type="button" aria-label="Switch theme" aria-pressed="false" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <g class="sun"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.4 1.4m11.2 11.2L19 19M5 19l1.4-1.4M17.6 6.4 19 5"/></g>
+          <path class="moon" d="M20.8 13.1A9 9 0 0 1 10.9 3.2 9 9 0 1 0 20.8 13.1Z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+    <div id="top" class="hero">
+      <p class="eyebrow">Enveda CASMI 2026 <span>/</span> Molecular identification</p>
+      <h1>From mass spectra<br>to molecular <span>structure.</span></h1>
+      <p class="hero-lead">I rank molecular structures from MS/MS spectra. I explore library search, machine learning, and the gap between validation and the leaderboard.</p>
+      <a class="text-link" href="#results">Explore the results <span aria-hidden="true">↗</span></a>
+      <dl class="hero-facts">
+        <div><dt>Best reproduced public score</dt><dd>0.480 <span>MRR@25</span></dd></div>
+        <div><dt>Structures in my PubChem index</dt><dd>91 <span>million</span></dd></div>
+        <div><dt>Candidates per molecule</dt><dd>25 <span>ranked structures</span></dd></div>
+        <div><dt>Controlled submissions</dt><dd>70+</dd></div>
+      </dl>
+    </div>
+
+    <section id="problem" class="section" aria-labelledby="problem-title">
+      <div class="section-heading"><p class="eyebrow">01 / The task</p><h2 id="problem-title">Problem</h2></div>
+      <div class="section-body">
+        <p class="lead">I start with a molecule's fragmentation spectra. I need to recover its 2D structure.</p>
+        <p>I use tandem mass spectrometry (MS/MS): a molecule breaks into fragments, and the instrument measures their mass-to-charge ratios and intensities. I use these clues to rank up to 25 candidate structures.</p>
+        <div class="metric-note"><h3>How I measure success</h3><p>I use mean reciprocal rank at 25, or MRR@25. A correct answer at rank 1 earns 1; at rank 2, it earns 1/2. A missing answer earns 0. I average over molecules. Matching uses tautomer-canonical connectivity, without stereochemistry.</p></div>
+        <div class="classes">
+          <article><p class="small-label">Class 1</p><h3>A reference spectrum exists</h3><p>I can search the supplied spectral library for the same structure.</p></article>
+          <article><p class="small-label">Class 2</p><h3>The structure is known</h3><p>I search structure databases without a reference spectrum in the supplied library.</p></article>
+          <article><p class="small-label">Class 3</p><h3>The structure is new</h3><p>I need to generate a structure outside the reference databases.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="approach" class="section" aria-labelledby="approach-title">
+      <div class="section-heading"><p class="eyebrow">02 / The method</p><h2 id="approach-title">My approach</h2></div>
+      <div class="section-body">
+        <p class="lead">I built my own retrieval and ranking pipeline. I then integrated and extended public community work.</p>
+        <ol class="timeline">
+          <li><div class="step-number" aria-hidden="true">01</div><div><h3>I built the first pipeline</h3><p>I combined spectral library search with analog evidence. I indexed 91 million PubChem structures by mass and connectivity. I added a LightGBM reranker and a contrastive spectrum-to-structure model trained with hard negatives from the same mass window.</p><p>I retrained the public spectrum-to-structure model on the full training set, with 300 timsTOF molecules held out by structure. It ranks the true structure first among about 50 isomers for 84% of them, against 63% for the public model. It did not improve the public leaderboard, which taught me as much as the offline gain.</p><p class="outcome">Best public score from my own pipeline: <strong>0.283</strong>.</p></div></li>
+          <li><div class="step-number" aria-hidden="true">02</div><div><h3>I integrated and extended an open-source pipeline</h3><p>I reproduced a community baseline at 0.451. I tested my contrastive signal, combined rankings from two public lineages, and evaluated later community extensions. I kept the authorship and asset licences explicit.</p><p class="outcome">The later <strong>0.479</strong> and <strong>0.480</strong> milestones reproduce community pipelines credited below.</p></div></li>
+          <li><div class="step-number" aria-hidden="true">03</div><div><h3>I added an external spectral library</h3><p>I built a compact library from newer GNPS, MassBank, and MSnLib releases. The organiser permits newer versions of the sources used in the training data. I use this library to look for reference spectra missing from the original snapshot.</p><p class="outcome">This extension is under evaluation. I do not assign it a score gain yet. <a href="https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/750684">Organiser clarification</a>.</p></div></li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="results" class="section" aria-labelledby="results-title">
+      <div class="section-heading"><p class="eyebrow">03 / The evidence</p><h2 id="results-title">Results</h2></div>
+      <div class="section-body">
+        <p class="lead">I track the public score as the pipeline evolves.</p>
+        <p>I show six selected milestones. I distinguish my own work from reproduced community pipelines. These public scores are provisional; I have no final private leaderboard result.</p>
+        <figure class="score-chart">
+          <div class="chart-heading"><h3>Public score progression</h3><span>MRR@25 · higher is better</span></div>
+          <svg viewBox="0 0 660 285" role="img" aria-labelledby="chart-title chart-description">
+            <title id="chart-title">Six public score milestones</title>
+            <desc id="chart-description">Scores rise from 0.187 to 0.283, 0.451, 0.468, 0.479, and 0.480. The horizontal axis lists milestones 1 through 6 in submission order, not elapsed time. Exact scores and methods are in the table below.</desc>
+            <g class="grid-lines"><path d="M55 235H625 M55 195H625 M55 155H625 M55 115H625 M55 75H625 M55 35H625"/></g>
+            <g class="axis-labels" text-anchor="end"><text x="43" y="239">0.0</text><text x="43" y="199">0.1</text><text x="43" y="159">0.2</text><text x="43" y="119">0.3</text><text x="43" y="79">0.4</text><text x="43" y="39">0.5</text></g>
+            <path class="chart-area" d="M75 160.2 180 121.8 285 54.6 390 47.8 495 43.4 600 43 600 235 75 235Z"/>
+            <path class="chart-line" d="M75 160.2 180 121.8 285 54.6 390 47.8 495 43.4 600 43"/>
+            <g class="chart-dots"><circle cx="75" cy="160.2" r="5"/><circle cx="180" cy="121.8" r="5"/><circle cx="285" cy="54.6" r="5"/><circle cx="390" cy="47.8" r="5"/><circle cx="495" cy="43.4" r="5"/><circle cx="600" cy="43" r="5"/></g>
+            <g class="score-labels"><text x="75" y="144" text-anchor="middle">0.187</text><text x="180" y="105" text-anchor="middle">0.283</text><text x="600" y="24" text-anchor="middle">0.480</text></g>
+            <g class="axis-labels" text-anchor="middle"><text x="75" y="258">1</text><text x="180" y="258">2</text><text x="285" y="258">3</text><text x="390" y="258">4</text><text x="495" y="258">5</text><text x="600" y="258">6</text></g>
+          </svg>
+          <figcaption>I plot milestones in submission order. I use a zero baseline and a 0.5 upper bound to show the later plateau.</figcaption>
+        </figure>
+        <table class="results-table">
+          <caption>Public leaderboard milestones</caption>
+          <thead><tr><th scope="col">Step</th><th scope="col">Pipeline milestone</th><th scope="col">MRR@25</th></tr></thead>
+          <tbody>
+            <tr><td>01</td><th scope="row">My library-search baseline</th><td>0.187</td></tr>
+            <tr><td>02</td><th scope="row">My full pipeline with contrastive ranking</th><td>0.283</td></tr>
+            <tr><td>03</td><th scope="row">Reproduced community baseline</th><td>0.451</td></tr>
+            <tr><td>04</td><th scope="row">My fusion of two community lineages</th><td>0.468</td></tr>
+            <tr><td>05</td><th scope="row">Reproduced community MIDX pipeline</th><td>0.479</td></tr>
+            <tr class="best"><td>06</td><th scope="row">Reproduced community neural ensemble</th><td>0.480</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="learning" class="section" aria-labelledby="learning-title">
+      <div class="section-heading"><p class="eyebrow">04 / The lessons</p><h2 id="learning-title">What I learned</h2></div>
+      <div class="section-body lessons">
+        <p class="lead">I need validation that reflects both the model's history and the test distribution.</p>
+        <article><h3>I run one change per submission</h3><p>I ran more than 70 submissions as controlled experiments. Each one changes a single thing against a named reference, and I keep control runs to check that a copy reproduces its score.</p></article>
+        <article><h3>I split by molecule</h3><p>I keep all spectra of a validation structure out of my model training. I group by the matching structure key, including equivalent tautomers. A spectrum-level split would let the same molecule appear on both sides.</p></article>
+        <article><h3>I audit pretrained models too</h3><p>I found that a clean split in my own code did not guarantee clean model features. Some community components were trained on the full competition training set. My held-out molecules could therefore already be known to those models. I also suspected prior exposure in third-party simulators; that explanation remained a hypothesis.</p></article>
+        <article><h3>I check which molecules my validation represents</h3><p>I initially relied on well-documented natural products. I inferred from targeted submissions that class 2 included more PubChem-only structures than my validation did. A rule that helped offline lost 0.057 on the public board when it demoted those candidates.</p></article>
+        <article><h3>I test whether offline gains transfer</h3><p>I rebuilt an evaluation with models that had not seen the held-out molecules. I also removed the correct structure's training-set status in the class 2 simulation. Neither change made learned reranking gains transfer reliably. The revised benchmark still predicted gains near 0.05 for two rerankers that lost about 0.08 on the public board.</p><p>I cannot attribute the whole gap to model exposure. I treat distribution mismatch as unresolved, and public leaderboard feedback as provisional evidence.</p></article>
+        <article><h3>I reproduce a score before adopting it</h3><p>I reran a public pipeline advertised at 0.481. My unchanged control scored 0.469. I could not establish the cause; input or output versions were a possible explanation. I kept 0.480 as my best reproduced score.</p></article>
+      </div>
+    </section>
+
+    <section id="status" class="section" aria-labelledby="status-title">
+      <div class="section-heading"><p class="eyebrow">05 / In progress</p><h2 id="status-title">Status</h2></div>
+      <div class="section-body">
+        <div class="status-panel"><p class="small-label">Competition ongoing</p><p class="release-note">Code will be published after the competition ends (December 14, 2026).</p><p>I continue evaluating the external library. I will document the final result and the release terms for each component.</p></div>
+        <p class="updated">Project snapshot: November 5, 2026. <a href="https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra">Competition on Kaggle</a>.</p>
+      </div>
+    </section>
+
+    <section id="credits" class="section" aria-labelledby="credits-title">
+      <div class="section-heading"><p class="eyebrow">06 / Acknowledgements</p><h2 id="credits-title">Credits</h2></div>
+      <div class="section-body">
+        <p class="lead">I build on public research, shared notebooks, and community datasets.</p>
+        <p>I credit notebook code and underlying assets separately. An Apache-2.0 notebook can depend on data or weights with non-commercial or share-alike terms.</p>
+        <h3 class="credit-heading">Community pipelines</h3>
+        <ul class="credit-list">
+          <li><a href="https://www.kaggle.com/code/saddamaditya/0-451-sota-forensics-lab-apex-synthesis">Maman Salto (saddamaditya)</a>: the 0.451 baseline. Apache-2.0.</li>
+          <li><a href="https://www.kaggle.com/code/dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures">Dmitrii Gluzdov</a> and <a href="https://www.kaggle.com/code/amrkhalid124/casmi26-upstream-data-v16">Overfitter (amrkhalid124)</a>: the 0.464 lineage used in my fusion. Apache-2.0.</li>
+          <li><a href="https://www.kaggle.com/code/ahmedberatozer/casmi26-v22-n1-challenger">Ahmed Berat Özer</a> and <a href="https://www.kaggle.com/code/prvsiyan/analog-propagation-casmi-2026-baseline">prvsiyan</a>: the challenger and earlier retrieval/ranking foundations. Notebook code: Apache-2.0; separate modules and assets have their own terms.</li>
+          <li><a href="https://www.kaggle.com/code/romantamrazov/casmi-2026-spectral-parallax">Roman Tamrazov</a>: Spectral Parallax, an upstream pipeline for later milestones. Apache-2.0.</li>
+          <li><a href="https://www.kaggle.com/code/baidalinadilzhan/casmi26-midx-exact-dedup-fill-0-479">Baidalin Adilzhan</a>: MIDX, exact deduplication, and candidate filling at 0.479. Apache-2.0.</li>
+          <li><a href="https://www.kaggle.com/code/alexchilton/casmi26-lb-0-480-neural-ensemble">alex chilton</a> and <a href="https://www.kaggle.com/code/bgunshui/casmi26-scorer-train-public">bgunshui</a>: the reproduced 0.480 neural ensemble and public training notebook. Ensemble notebook: Apache-2.0. I retain separate data and model terms.</li>
+        </ul>
+        <h3 class="credit-heading">Data, models, and libraries</h3>
+        <div class="credits-table-wrap" role="region" aria-label="Data and model credits" tabindex="0">
+          <table class="credits-table">
+            <caption>Sources and recorded reuse terms</caption>
+            <thead><tr><th scope="col">Source and contributors</th><th scope="col">Licence or terms</th></tr></thead>
+            <tbody>
+              <tr><th scope="row"><a href="https://pubchem.ncbi.nlm.nih.gov/">PubChem / NLM</a>; community tier and prior by Ahmed Berat Özer and Dmitrii Gluzdov</th><td>NCBI data-use policy. NLM-generated content is public domain; contributed records may carry source-specific terms. Kaggle packages are labelled “other”.</td></tr>
+              <tr><th scope="row"><a href="https://coconut.naturalproducts.net/">COCONUT 2.0</a>; the COCONUT team</th><td>CC BY 4.0 for the source database. The prvsiyan candidate package has CC BY-NC-SA 4.0 terms.</td></tr>
+              <tr><th scope="row"><a href="https://www.kaggle.com/franciscoangulo/datasets">PubChemLite package</a>; franciscoangulo and source contributors</th><td>CC0 1.0, as recorded for the community package used by the challenger lineage.</td></tr>
+              <tr><th scope="row"><a href="https://www.kaggle.com/datasets/ahmedberatozer/casmi26-v2-pool">Candidate pool</a>, <a href="https://www.kaggle.com/datasets/ahmedberatozer/casmi26-v3-models">v3 models</a>, <a href="https://www.kaggle.com/datasets/ahmedberatozer/casmi26-v4b-models">v4b models</a>, and <a href="https://www.kaggle.com/datasets/ahmedberatozer/casmi26-fpnet-full1">full FPNet</a>; Ahmed Berat Özer</th><td>Kaggle fields: “other”. Code in v3/v4b: MIT. Pool and weights retain competition-data and COCONUT terms; v4b also retains DreaMS attribution.</td></tr>
+              <tr><th scope="row"><a href="https://www.kaggle.com/datasets/dmitriigluzdov/casmi26-attributed-v4g-reproduction-assets">Attributed v4g assets</a>; Dmitrii Gluzdov and upstream contributors</th><td>CC BY-NC-SA 4.0. These asset terms remain separate from notebook code.</td></tr>
+              <tr><th scope="row"><a href="https://www.kaggle.com/datasets/prvsiyan/casmi26-ranker-features">Ranker features</a> and <a href="https://www.kaggle.com/datasets/prvsiyan/casmi26-fp-models-v2">fingerprint models</a>; prvsiyan</th><td>CC BY-NC-SA 4.0.</td></tr>
+              <tr><th scope="row"><a href="https://www.kaggle.com/datasets/dmitriigluzdov/casmi26-fold-safe-fpnet">Fold-safe FPNet</a> and <a href="https://www.kaggle.com/datasets/dmitriigluzdov/casmi26-natural-product-panel-benchmark">natural-product benchmark</a>; Dmitrii Gluzdov</th><td>FPNet code: Apache-2.0, with underlying data terms retained. The benchmark retains its source-data terms.</td></tr>
+              <tr><th scope="row"><a href="https://www.kaggle.com/datasets/dmitriigluzdov/casmi26-natural-product-knowledge-table">Natural-product knowledge table</a>; Dmitrii Gluzdov, LOTUS, and NPAtlas contributors</th><td>CC BY 4.0 / CC BY-NC 4.0 as recorded for the combined table. I retain source-specific attribution and restrictions.</td></tr>
+              <tr><th scope="row"><a href="https://www.kaggle.com/datasets/sanpier/casmi-spectrum-model-v1">Spectrum model</a> and <a href="https://www.kaggle.com/datasets/sanpier/catalogue-experiment-saner">experimental catalogue</a>; Saner Turhaner</th><td>Spectrum model: CC BY-NC 4.0. The catalogue's separate licence was not established in my audit; I do not assume a permissive grant.</td></tr>
+              <tr><th scope="row"><a href="https://github.com/pluskal-lab/DreaMS">DreaMS</a>; the DreaMS authors, with embeddings shared by <a href="https://www.kaggle.com/datasets/hengck23/hengck23-dreams-enveda-casmi26">hengck23</a></th><td>MIT for code and the Kaggle package; CC BY 4.0 attribution applies to the derived pretrained assets identified in the community audit.</td></tr>
+              <tr><th scope="row"><a href="https://github.com/coleygroup/ms-pred">ms-pred / ICEBERG / GLACIER</a>; Samuel Goldman and collaborators</th><td>MIT code. The community packages apply the repository licence to checkpoints; a separate checkpoint licence was not explicit.</td></tr>
+              <tr><th scope="row"><a href="https://www.kaggle.com/datasets/megayak/casmi26-simulated-ranker-rows">Simulated ranker rows</a>; megayak. <a href="https://www.kaggle.com/datasets/sergiomalv/casmi-chebi-lmsd-structures">ChEBI / LIPID MAPS structures</a>; sergiomalv and source contributors</th><td>Ranker rows: CC0 1.0. Structure package: CC BY 4.0, with its attribution file.</td></tr>
+              <tr><th scope="row"><a href="https://github.com/MassBank/MassBank-data/releases/tag/2026.03">MassBank 2026.03</a>; MassBank contributors</th><td>CC BY 4.0.</td></tr>
+              <tr><th scope="row"><a href="https://zenodo.org/records/21105617">MSnLib 2026-07</a>; the Pluskal lab and contributors</th><td>CC BY 4.0.</td></tr>
+              <tr><th scope="row"><a href="https://gnps2.org/">GNPS 2026-10</a>; GNPS community contributors, library without propagated annotations</th><td>CC0 1.0.</td></tr>
+              <tr><th scope="row"><a href="https://www.rdkit.org/">RDKit</a>; RDKit contributors</th><td>BSD-3-Clause upstream. Community wheel-package labels do not replace the upstream terms.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="updated">I list dependencies across the evaluated community pipelines. I do not redistribute their code, data, or model weights on this page.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap footer"><p>msms/structure <span>·</span> Enveda CASMI 2026</p><a href="#top">Back to top ↑</a></footer>
+</body>
+</html>

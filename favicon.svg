@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
+  <style>:root { --badge: #1759c5; --mark: #ffffff; }</style>
+  <rect width="40" height="40" rx="9" fill="var(--badge)"/>
+  <path d="M9 28V20M16 28V11M24 28V16M31 28V23" stroke="var(--mark)" stroke-width="3" stroke-linecap="round"/>
+</svg>
